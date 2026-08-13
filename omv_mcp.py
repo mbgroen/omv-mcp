@@ -52,7 +52,7 @@ from typing import Any
 
 from mcp_stdio import Server
 
-__version__ = "1.2.1"
+__version__ = "1.0.0"
 
 mcp = Server(
     "openmediavault",
