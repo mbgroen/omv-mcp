@@ -17,6 +17,17 @@ MCP client  --stdio-->  omv_mcp.py  --ssh-->  NAS  -->  omv-rpc  -->  OMV RPC la
  (your PC)              (your PC)                        (the same layer as the web UI)
 ```
 
+**Works with any MCP client.** This is a plain stdio MCP server with no client-specific
+behaviour: Claude Desktop, Claude Code, Cursor, Zed, Cline, VS Code, the OpenAI Agents SDK
+and anything else that speaks the protocol can all run it. Any client needs the same three
+things — a Python interpreter, the path to `omv_mcp.py`, and a handful of environment
+variables.
+
+For **Claude Desktop** specifically there is also a prebuilt `.mcpb` extension file. It
+contains that very same server, wrapped so the app can install it in one click and give you
+a settings panel instead of a config file to edit. It is a convenience, not a different
+product — and not a requirement.
+
 **No dependencies.** The server is pure standard library — including its MCP protocol
 layer — so there is no virtualenv to create, nothing to `pip install`, and it runs on any
 Python 3.9 or newer.
@@ -60,6 +71,7 @@ Kubernetes, whatever — works immediately, with no update to this server.
 |---|---|
 | **NAS** | OpenMediaVault 7 or 8, reachable over SSH |
 | **Your computer** | Python 3.9 or newer |
+| **MCP client** | Any client that can run a stdio MCP server |
 | **Access** | An SSH key that logs in to the NAS without a password, and an account that may run `omv-rpc` |
 
 Developed and verified against **OpenMediaVault 8.5.6-1 (Synchrony)** on Debian 13. OMV 7
@@ -75,6 +87,22 @@ uses the same RPC layer and is expected to work; reports welcome.
 
 The server is verified on macOS (Python 3.9) and Linux (Python 3.13). Windows is covered
 by CI but has not been run against a real NAS — reports welcome.
+
+---
+
+## Two ways to install
+
+Both routes install the same server. Pick one:
+
+| | Use this when | What you get |
+|---|---|---|
+| [**Claude Desktop extension**](#install-as-a-claude-desktop-extension) | You use Claude Desktop on macOS or Windows | One click, and a settings panel instead of a config file to edit |
+| [**Manual setup**](#install-manually) | Any other client, or Linux | Clone the repository and point your client at `omv_mcp.py` |
+
+The extension is simply this repository's `omv_mcp.py` packaged into a `.mcpb` file — a zip
+with a manifest that tells Claude Desktop how to start it and which settings to ask you
+for. Same code, same behaviour; only the installation differs. If your client is not Claude
+Desktop, you are not missing anything by going the manual route.
 
 ---
 
@@ -125,13 +153,17 @@ root, so the build script needs nothing but the standard library — no Node.js 
 
 ## Install manually
 
-For Claude Code, for other MCP clients, and for Linux.
+The route for every client other than Claude Desktop — and the only route on Linux.
 
 ```bash
 git clone https://github.com/mbgroen/omv-mcp.git
 ```
 
 There is nothing to install. Point your client at `omv_mcp.py` with your system Python.
+Whatever the client, it needs the same three things: the command `python3`, the argument
+`/absolute/path/to/omv_mcp.py`, and the environment variables from
+[the table below](#environment-variables). The examples that follow are just those three
+things written in each client's own configuration format.
 
 **Claude Code** — the same on macOS, Linux and Windows:
 
@@ -142,12 +174,13 @@ claude mcp add openmediavault -e OMV_SSH_HOST=192.168.1.100 -e OMV_READONLY=1 --
 Add `-s user` to make it available in every project rather than only the current one.
 `claude mcp list` reports `✔ Connected` once the handshake succeeds.
 
-**Any other MCP client** — Cursor, Zed, Cline, VS Code, the OpenAI Agents SDK and others
-need the same three things: the command `python3`, the argument
-`/absolute/path/to/omv_mcp.py`, and the environment variables below. This is a standard
-stdio MCP server with no client-specific behaviour.
+**Cursor, Zed, Cline, VS Code, the OpenAI Agents SDK and others** — most use a JSON block
+in the same shape as the Claude Desktop one below, under whatever key that client calls its
+server list. Consult its documentation for the file, then fill in the same command,
+argument and environment variables.
 
-**Claude Desktop by hand**, in `claude_desktop_config.json` —
+**Claude Desktop by hand** — useful if you would rather not use the extension, in
+`claude_desktop_config.json` —
 `~/Library/Application Support/Claude/` on macOS, `%APPDATA%\Claude\` on Windows:
 
 ```json
