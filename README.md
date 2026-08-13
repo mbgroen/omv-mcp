@@ -332,6 +332,7 @@ a NAS actually returns rather than against an idealised sample.
 
 | Symptom | Likely cause |
 |---|---|
+| Extension will not install: "Python >=…" unmet | The manifest's version range must be node-semver (`>=3.9 <4`), not pip syntax (`>=3.9,<4.0`). Fixed in 1.1.1; upgrade if you see this. |
 | Extension will not start | No `python3` on PATH (`python` on Windows). Check with `python3 --version`. |
 | Server does not appear in the client | JSON syntax error, or a relative path in a manual config |
 | `Permission denied (publickey)` | SSH key not installed, or root login refused by the NAS |

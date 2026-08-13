@@ -2,7 +2,7 @@
   "manifest_version": "0.3",
   "name": "omv-mcp",
   "display_name": "OpenMediaVault",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Manage an OpenMediaVault NAS over SSH.",
   "long_description": "Gives Claude access to an OpenMediaVault NAS through OMV's own RPC layer -- the same one the web interface uses -- over an ordinary SSH connection. Inspect disks, filesystems, shared folders, users and S.M.A.R.T. health; restart services; apply configuration changes; run background jobs and read their output.\n\nNothing is installed on the NAS and no extra port is opened. Authentication is your existing SSH key.\n\nRather than a fixed list of narrow tools, the extension discovers the services and methods your particular installation offers at runtime, so OMV plugins you install later work straight away.\n\nStart with **Read-only mode** enabled to explore safely.",
   "author": {
@@ -140,7 +140,7 @@
     "claude_desktop": ">=0.10.0",
     "platforms": ["darwin", "win32", "linux"],
     "runtimes": {
-      "python": ">=3.9,<4.0"
+      "python": ">=3.9 <4"
     }
   }
 }
