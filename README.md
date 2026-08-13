@@ -71,7 +71,7 @@ so nothing has to be edited in any file. On Linux, skip to
 | NAS hostname or IP address | — | Required. An IP, or a host from your `~/.ssh/config`. |
 | SSH username | `root` | The account used to log in |
 | SSH port | `22` | Change only for a non-standard port |
-| SSH private key | *(empty)* | Optional; empty uses your ssh-agent and `~/.ssh/config`. If you do pick a file, choose the **private** key — not the `.pub` next to it. |
+| SSH private key (path) | *(empty)* | Best left empty — that uses your ssh-agent and `~/.ssh/config`. Only fill in a path if you need a specific key, and give the **private** key (`~/.ssh/id_ed25519`), not the `.pub` beside it. |
 | OpenMediaVault user | `admin` | The OMV login the RPC runs as — not the SSH user |
 | Run commands with sudo | off | Turn on when the SSH user is not root |
 | **Read-only mode** | **on** | Refuses anything that is not a read operation |
@@ -203,6 +203,14 @@ ssh root@192.168.1.100 'omv-rpc -u admin System getInformation'
 
 If that last command prints JSON, the server will work.
 
+**First connection from a new machine.** The NAS will not be in that machine's
+`known_hosts` yet. Because `BatchMode` stops ssh from asking *"are you sure you want to
+continue connecting?"*, the connection would simply fail. omv-mcp therefore uses
+`StrictHostKeyChecking=accept-new`: an unknown host is recorded on first contact, exactly
+as answering *yes* would, while a host key that **changes** later is still refused with the
+usual warning. If you would rather approve it yourself, run `ssh user@nas` once in a
+terminal before enabling the extension.
+
 **Root login refused?** OMV disables SSH root login by default. Either enable it under
 *Services → SSH → Permit root login*, or use your own account and turn on sudo — that
 account needs to be in the `sudo` group.
@@ -301,6 +309,13 @@ Sensible precautions:
 - **Keep it on your LAN.** There is no authentication in this server itself; its security
   boundary is your SSH configuration.
 
+On host keys: the server connects with `StrictHostKeyChecking=accept-new`, which trusts
+the NAS on first contact and pins it from then on. That is trust-on-first-use, the same
+bargain you make when you type *yes* at an ssh prompt, and it is what makes an
+unattended first connection possible at all. It is **not** `StrictHostKeyChecking=no`: a
+key that changes after that first connection is still refused. Pre-populate `known_hosts`
+by connecting once from a terminal if you want to avoid the first-use window entirely.
+
 Read-only mode uses a prefix heuristic — a method is allowed if its name starts with
 `get`, `enumerate`, `list`, `is`, `has`, `read`, `query`, `find`, `exists`, `count` or
 `check`. It is deliberately conservative and will occasionally block a harmless method.
@@ -385,6 +400,8 @@ a NAS actually returns rather than against an idealised sample.
 | `command not found: omv-rpc` | `/usr/sbin` is not in the SSH user's PATH — turn on sudo |
 | `Command exceeded 60s` | Raise the timeout, or use `omv_wait_for_task` for long jobs |
 | A method is refused as "not a read method" | Read-only mode is on. If you just turned it off, fully quit and reopen Claude Desktop. |
+| No connection at all from a newly set up machine | That machine has no SSH key on the NAS yet. Test it outside Claude first: `ssh user@nas 'omv-rpc -u admin System getInformation'`. |
+| A setting will not stick in the extension panel | Quit Claude Desktop and edit it directly in `~/Library/Application Support/Claude/Claude Extensions Settings/local.mcpb.michiel-groen.omv-mcp.json`, then reopen. |
 | Settings disagree with `omv_connection_info` | The server is still running with its startup values, or a second registration in another client answered |
 | `Permission denied (publickey)` after picking a key file | You selected the `.pub` instead of the private key — `omv_connection_info` flags this under `warnings` |
 | A newly installed plugin is invisible | Restart the MCP server; the service list is cached |

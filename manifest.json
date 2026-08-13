@@ -2,7 +2,7 @@
   "manifest_version": "0.3",
   "name": "omv-mcp",
   "display_name": "OpenMediaVault",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Manage an OpenMediaVault NAS over SSH.",
   "long_description": "Gives Claude access to an OpenMediaVault NAS through OMV's own RPC layer -- the same one the web interface uses -- over an ordinary SSH connection. Inspect disks, filesystems, shared folders, users and S.M.A.R.T. health; restart services; apply configuration changes; run background jobs and read their output.\n\nNothing is installed on the NAS and no extra port is opened. Authentication is your existing SSH key.\n\nRather than a fixed list of narrow tools, the extension discovers the services and methods your particular installation offers at runtime, so OMV plugins you install later work straight away.\n\nStart with **Read-only mode** enabled to explore safely. When you later turn it off, click Save and then fully quit and reopen Claude Desktop -- these settings are read once when the server starts, so a running server keeps the old value.",
   "author": {
@@ -76,9 +76,9 @@
       "required": false
     },
     "ssh_key": {
-      "type": "file",
-      "title": "SSH private key",
-      "description": "Optional. Leave empty to use your ssh-agent and ~/.ssh/config, which is usually what you want. If you do pick a file, choose the PRIVATE key (for example id_ed25519), not the matching .pub file next to it. Password logins are not supported: the connection runs with BatchMode enabled, so it can never stop to prompt you.",
+      "type": "string",
+      "title": "SSH private key (path, optional)",
+      "description": "Leave empty to use your ssh-agent and ~/.ssh/config -- that is the recommended setup and works for most people. Only fill this in if you need a specific key, and then give the path to the PRIVATE key, for example ~/.ssh/id_ed25519 -- not the .pub file beside it. Password logins are not supported: the connection runs with BatchMode enabled, so it can never stop to prompt you.",
       "required": false
     },
     "rpc_user": {

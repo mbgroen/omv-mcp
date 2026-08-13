@@ -52,7 +52,7 @@ from typing import Any
 
 from mcp_stdio import Server
 
-__version__ = "1.2.0"
+__version__ = "1.2.1"
 
 mcp = Server(
     "openmediavault",
@@ -92,6 +92,22 @@ def env_flag(name: str, default: bool) -> bool:
     return default
 
 
+# A manifest wires settings through as "${user_config.ssh_key}". When the host
+# cannot resolve one -- an optional field the user never filled in, for
+# instance -- the placeholder can arrive verbatim. Passing that on as a real
+# value gives `ssh -i '${user_config.ssh_key}'` and an error that names nothing
+# the user recognises, so treat an unresolved template as "not set".
+UNRESOLVED_TEMPLATE_RE = re.compile(r"^\$\{[^}]*\}$")
+
+
+def env_str(name: str, default: str = "") -> str:
+    """Read a text setting, ignoring an unresolved ${...} placeholder."""
+    raw = os.environ.get(name, "").strip()
+    if not raw or UNRESOLVED_TEMPLATE_RE.match(raw):
+        return default
+    return raw
+
+
 def env_int(name: str, default: int) -> int:
     """
     Read a numeric setting, tolerating the "60.0" a number input may produce.
@@ -99,7 +115,7 @@ def env_int(name: str, default: int) -> int:
     An unparseable value falls back to the default; refusing to start over a
     malformed timeout would be worse than using a sane one.
     """
-    raw = os.environ.get(name, "").strip()
+    raw = env_str(name)
     if not raw:
         return default
     try:
@@ -108,11 +124,11 @@ def env_int(name: str, default: int) -> int:
         return default
 
 
-SSH_HOST = os.environ.get("OMV_SSH_HOST", "").strip()
-SSH_USER = os.environ.get("OMV_SSH_USER", "").strip() or "root"
+SSH_HOST = env_str("OMV_SSH_HOST")
+SSH_USER = env_str("OMV_SSH_USER", "root")
 SSH_PORT = str(env_int("OMV_SSH_PORT", 22))
-SSH_KEY = os.environ.get("OMV_SSH_KEY", "").strip()
-RPC_USER = os.environ.get("OMV_RPC_USER", "").strip() or "admin"
+SSH_KEY = env_str("OMV_SSH_KEY")
+RPC_USER = env_str("OMV_RPC_USER", "admin")
 USE_SUDO = env_flag("OMV_SUDO", False)
 READONLY = env_flag("OMV_READONLY", False)
 ALLOW_SHELL = env_flag("OMV_ALLOW_SHELL", True)
@@ -168,6 +184,13 @@ def _ssh_prefix() -> list[str]:
     cmd = [
         "ssh",
         "-o", "BatchMode=yes",           # never prompt interactively for a password
+        # With BatchMode on, ssh cannot ask "are you sure you want to continue
+        # connecting?", so the default strict setting makes the very first
+        # connection from a new machine fail outright -- the NAS is simply not
+        # in known_hosts yet. accept-new records an unknown host on first
+        # contact, exactly as answering "yes" would, while still refusing a key
+        # that changes later, which is the case that actually signals trouble.
+        "-o", "StrictHostKeyChecking=accept-new",
         "-o", "ConnectTimeout=10",
         "-p", SSH_PORT,
     ]
@@ -200,6 +223,47 @@ def _rpc_error_message(payload: str) -> str | None:
         return None
     message = error.get("message")
     return message if isinstance(message, str) and message else None
+
+
+# ssh reports failures in a vocabulary that says nothing about this extension's
+# settings. Each of these maps a stock message onto the thing to actually go and
+# change, because the raw text sends people looking in the wrong place.
+SSH_HINTS = (
+    ("permission denied",
+     "The NAS refused the key. Check that this machine's public key is in "
+     "~/.ssh/authorized_keys on the NAS (`ssh-copy-id user@nas`), that the SSH "
+     "username is right, and -- if you set a key file -- that it is the private "
+     "key and not the .pub. Leaving the key setting empty uses your ssh-agent."),
+    ("host key verification failed",
+     "The NAS is not in this machine's known_hosts and its key could not be "
+     "accepted automatically. Run `ssh user@nas` once in a terminal and answer "
+     "yes, then retry."),
+    ("remote host identification has changed",
+     "The NAS is presenting a different host key than the one recorded here. "
+     "That is expected after reinstalling the NAS, and a warning sign "
+     "otherwise. Resolve it deliberately with `ssh-keygen -R <host>`."),
+    ("could not resolve hostname",
+     "The hostname could not be looked up. Check the NAS address setting; an "
+     "IP address rules out DNS as the cause."),
+    ("connection refused",
+     "Nothing is listening on that port. Check that SSH is enabled on the NAS "
+     "(Services / SSH) and that the port setting matches."),
+    ("no route to host",
+     "The NAS could not be reached at all. Check that it is powered on and on "
+     "the same network as this machine."),
+    ("operation timed out",
+     "The NAS did not answer in time. Check the address, and that you are on "
+     "the same network."),
+)
+
+
+def _ssh_hint(detail: str) -> str:
+    """Append an explanation of what to change, for the ssh failures people hit."""
+    lowered = detail.lower()
+    for needle, hint in SSH_HINTS:
+        if needle in lowered:
+            return f"\n\nWhat this usually means: {hint}"
+    return ""
 
 
 def _exec(command: str, timeout: int | None = None) -> str:
@@ -235,7 +299,8 @@ def _exec(command: str, timeout: int | None = None) -> str:
             if rpc_message:
                 raise OmvError(rpc_message)
         detail = (proc.stderr or proc.stdout or "").strip()
-        raise OmvError(f"Exit status {proc.returncode}: {detail[:2000]}")
+        hint = _ssh_hint(detail)
+        raise OmvError(f"Exit status {proc.returncode}: {detail[:2000]}{hint}")
 
     return proc.stdout
 

@@ -66,6 +66,107 @@ class TestEnvInt(unittest.TestCase):
         self.assertEqual(self._int("soon"), 60)
 
 
+class TestEnvStr(unittest.TestCase):
+    """
+    An optional setting the user never filled in can reach the process as the
+    literal "${user_config.ssh_key}". Treating that as a path produces
+    `ssh -i '${user_config.ssh_key}'` and an error mentioning nothing the user
+    recognises, so it has to count as unset.
+    """
+
+    def setUp(self):
+        self.module = load_module()
+
+    def _str(self, value, default=""):
+        import os
+        from unittest import mock
+        with mock.patch.dict(os.environ, {"OMV_TEST_STR": value}, clear=False):
+            return self.module.env_str("OMV_TEST_STR", default)
+
+    def test_ordinary_value_passes_through(self):
+        self.assertEqual(self._str("  nas.local  "), "nas.local")
+
+    def test_unresolved_placeholder_counts_as_unset(self):
+        self.assertEqual(self._str("${user_config.ssh_key}"), "")
+        self.assertEqual(self._str("${user_config.ssh_user}", "root"), "root")
+
+    def test_a_path_that_merely_contains_a_brace_is_kept(self):
+        self.assertEqual(self._str("/keys/${odd}/id_ed25519"), "/keys/${odd}/id_ed25519")
+
+    def test_empty_uses_the_default(self):
+        self.assertEqual(self._str("", "root"), "root")
+
+    def test_placeholder_does_not_become_an_ssh_identity(self):
+        module = load_module(OMV_SSH_HOST="nas.local", OMV_SSH_KEY="${user_config.ssh_key}")
+        self.assertNotIn("-i", module._ssh_prefix())
+
+    def test_placeholder_in_a_number_field_falls_back(self):
+        module = load_module(OMV_SSH_HOST="nas.local", OMV_SSH_PORT="${user_config.ssh_port}")
+        self.assertEqual(module.SSH_PORT, "22")
+
+
+class TestHostKeyPolicy(unittest.TestCase):
+    def test_unknown_hosts_are_accepted_on_first_contact(self):
+        """
+        BatchMode means ssh cannot ask "are you sure?", so the strict default
+        makes the first connection from a fresh machine fail outright.
+        """
+        module = load_module(OMV_SSH_HOST="nas.local")
+        self.assertIn("StrictHostKeyChecking=accept-new", module._ssh_prefix())
+
+    def test_checking_is_not_disabled_outright(self):
+        """accept-new still refuses a key that changes later; `no` would not."""
+        module = load_module(OMV_SSH_HOST="nas.local")
+        prefix = " ".join(module._ssh_prefix())
+        self.assertNotIn("StrictHostKeyChecking=no", prefix)
+
+
+class TestSshHints(unittest.TestCase):
+    def setUp(self):
+        self.module = load_module()
+
+    def test_permission_denied_points_at_the_key(self):
+        hint = self.module._ssh_hint("Permission denied (publickey).")
+        self.assertIn("authorized_keys", hint)
+        self.assertIn(".pub", hint)
+
+    def test_unknown_host_key_explains_the_one_off_terminal_step(self):
+        hint = self.module._ssh_hint("Host key verification failed.")
+        self.assertIn("known_hosts", hint)
+
+    def test_changed_host_key_is_not_waved_away(self):
+        hint = self.module._ssh_hint("REMOTE HOST IDENTIFICATION HAS CHANGED!")
+        self.assertIn("ssh-keygen -R", hint)
+
+    def test_dns_refused_and_unreachable_each_get_their_own_hint(self):
+        cases = {
+            "ssh: Could not resolve hostname nas": "IP address",
+            "connect to host nas port 22: Connection refused": "Services / SSH",
+            "connect to host nas port 22: No route to host": "powered on",
+        }
+        for detail, expected in cases.items():
+            with self.subTest(detail):
+                self.assertIn(expected, self.module._ssh_hint(detail))
+
+    def test_unrecognised_errors_get_no_invented_advice(self):
+        self.assertEqual(self.module._ssh_hint("something else entirely"), "")
+
+    def test_the_hint_is_appended_to_the_raw_error(self):
+        from unittest import mock
+        from helpers import fake_completed
+
+        module = load_module(OMV_SSH_HOST="nas.local")
+        with mock.patch("subprocess.run",
+                        return_value=fake_completed(stderr="Permission denied (publickey).",
+                                                    returncode=255)):
+            with self.assertRaises(module.OmvError) as ctx:
+                module._exec("uptime")
+
+        message = str(ctx.exception)
+        self.assertIn("Permission denied (publickey).", message)
+        self.assertIn("What this usually means", message)
+
+
 class TestConfigDefaults(unittest.TestCase):
     def test_defaults_without_any_environment(self):
         module = load_module()
