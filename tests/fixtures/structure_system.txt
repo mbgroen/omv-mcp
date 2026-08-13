@@ -1,0 +1,17 @@
+28:class System extends \OMV\Rpc\ServiceAbstract
+43:        $this->registerMethod("noop");
+44:        $this->registerMethod("getTopInfo");
+45:        $this->registerMethod("getShells");
+46:        $this->registerMethod("reboot");
+47:        $this->registerMethod("shutdown");
+48:        $this->registerMethod("standby");
+49:        $this->registerMethod("suspend");
+50:        $this->registerMethod("hibernate");
+51:        $this->registerMethod("getTimeSettings");
+52:        $this->registerMethod("setTimeSettings");
+53:        $this->registerMethod("setDate");
+54:        $this->registerMethod("getTimeZoneList");
+55:        $this->registerMethod("getInformation");
+56:        $this->registerMethod("getDiagnosticReport");
+57:        $this->registerMethod("getCpuStats");
+58:        $this->registerMethod("getCpuGovernors");

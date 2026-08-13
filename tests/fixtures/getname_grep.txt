@@ -1,0 +1,311 @@
+/usr/share/openmediavault/engined/rpc/smb.inc:31:    public function getName()
+/usr/share/openmediavault/engined/rpc/smb.inc-32-    {
+/usr/share/openmediavault/engined/rpc/smb.inc-33-        return "SMB";
+/usr/share/openmediavault/engined/rpc/smb.inc-34-    }
+/usr/share/openmediavault/engined/rpc/smb.inc-35-
+--
+/usr/share/openmediavault/engined/rpc/quota.inc:31:    public function getName()
+/usr/share/openmediavault/engined/rpc/quota.inc-32-    {
+/usr/share/openmediavault/engined/rpc/quota.inc-33-        return "Quota";
+/usr/share/openmediavault/engined/rpc/quota.inc-34-    }
+/usr/share/openmediavault/engined/rpc/quota.inc-35-
+--
+/usr/share/openmediavault/engined/rpc/proftpd.inc:31:    public function getName()
+/usr/share/openmediavault/engined/rpc/proftpd.inc-32-    {
+/usr/share/openmediavault/engined/rpc/proftpd.inc-33-        return "FTP";
+/usr/share/openmediavault/engined/rpc/proftpd.inc-34-    }
+/usr/share/openmediavault/engined/rpc/proftpd.inc-35-
+--
+/usr/share/openmediavault/engined/rpc/sharemgmt.inc:33:    public function getName()
+/usr/share/openmediavault/engined/rpc/sharemgmt.inc-34-    {
+/usr/share/openmediavault/engined/rpc/sharemgmt.inc-35-        return "ShareMgmt";
+/usr/share/openmediavault/engined/rpc/sharemgmt.inc-36-    }
+/usr/share/openmediavault/engined/rpc/sharemgmt.inc-37-
+--
+/usr/share/openmediavault/engined/rpc/perfstats.inc:31:    public function getName()
+/usr/share/openmediavault/engined/rpc/perfstats.inc-32-    {
+/usr/share/openmediavault/engined/rpc/perfstats.inc-33-        return "PerfStats";
+/usr/share/openmediavault/engined/rpc/perfstats.inc-34-    }
+/usr/share/openmediavault/engined/rpc/perfstats.inc-35-
+--
+/usr/share/openmediavault/engined/rpc/kernel.inc:23:    public function getName()
+/usr/share/openmediavault/engined/rpc/kernel.inc-24-    {
+/usr/share/openmediavault/engined/rpc/kernel.inc-25-        return 'kernel';
+/usr/share/openmediavault/engined/rpc/kernel.inc-26-    }
+/usr/share/openmediavault/engined/rpc/kernel.inc-27-
+--
+/usr/share/openmediavault/engined/rpc/diskmgmt.inc:33:    public function getName()
+/usr/share/openmediavault/engined/rpc/diskmgmt.inc-34-    {
+/usr/share/openmediavault/engined/rpc/diskmgmt.inc-35-        return "DiskMgmt";
+/usr/share/openmediavault/engined/rpc/diskmgmt.inc-36-    }
+/usr/share/openmediavault/engined/rpc/diskmgmt.inc-37-
+--
+/usr/share/openmediavault/engined/rpc/network.inc:33:    public function getName()
+/usr/share/openmediavault/engined/rpc/network.inc-34-    {
+/usr/share/openmediavault/engined/rpc/network.inc-35-        return "Network";
+/usr/share/openmediavault/engined/rpc/network.inc-36-    }
+/usr/share/openmediavault/engined/rpc/network.inc-37-
+--
+/usr/share/openmediavault/engined/rpc/certificatemgmt.inc:31:    public function getName()
+/usr/share/openmediavault/engined/rpc/certificatemgmt.inc-32-    {
+/usr/share/openmediavault/engined/rpc/certificatemgmt.inc-33-        return "CertificateMgmt";
+/usr/share/openmediavault/engined/rpc/certificatemgmt.inc-34-    }
+/usr/share/openmediavault/engined/rpc/certificatemgmt.inc-35-
+--
+/usr/share/openmediavault/engined/rpc/usermgmt.inc:33:    public function getName()
+/usr/share/openmediavault/engined/rpc/usermgmt.inc-34-    {
+/usr/share/openmediavault/engined/rpc/usermgmt.inc-35-        return "UserMgmt";
+/usr/share/openmediavault/engined/rpc/usermgmt.inc-36-    }
+/usr/share/openmediavault/engined/rpc/usermgmt.inc-37-
+--
+/usr/share/openmediavault/engined/rpc/config.inc:31:    public function getName()
+/usr/share/openmediavault/engined/rpc/config.inc-32-    {
+/usr/share/openmediavault/engined/rpc/config.inc-33-        return "Config";
+/usr/share/openmediavault/engined/rpc/config.inc-34-    }
+/usr/share/openmediavault/engined/rpc/config.inc-35-
+--
+/usr/share/openmediavault/engined/rpc/fstab.inc:31:    public function getName()
+/usr/share/openmediavault/engined/rpc/fstab.inc-32-    {
+/usr/share/openmediavault/engined/rpc/fstab.inc-33-        return "FsTab";
+/usr/share/openmediavault/engined/rpc/fstab.inc-34-    }
+/usr/share/openmediavault/engined/rpc/fstab.inc-35-
+--
+/usr/share/openmediavault/engined/rpc/k8s.inc:36:    public function getName()
+/usr/share/openmediavault/engined/rpc/k8s.inc-37-    {
+/usr/share/openmediavault/engined/rpc/k8s.inc-38-        return "K8s";
+/usr/share/openmediavault/engined/rpc/k8s.inc-39-    }
+/usr/share/openmediavault/engined/rpc/k8s.inc-40-
+--
+/usr/share/openmediavault/engined/rpc/iptables.inc:31:    public function getName()
+/usr/share/openmediavault/engined/rpc/iptables.inc-32-    {
+/usr/share/openmediavault/engined/rpc/iptables.inc-33-        return "Iptables";
+/usr/share/openmediavault/engined/rpc/iptables.inc-34-    }
+/usr/share/openmediavault/engined/rpc/iptables.inc-35-
+--
+/usr/share/openmediavault/engined/rpc/mdmgmt.inc:33:    public function getName()
+/usr/share/openmediavault/engined/rpc/mdmgmt.inc-34-    {
+/usr/share/openmediavault/engined/rpc/mdmgmt.inc-35-        return "MdMgmt";
+/usr/share/openmediavault/engined/rpc/mdmgmt.inc-36-    }
+/usr/share/openmediavault/engined/rpc/mdmgmt.inc-37-
+--
+/usr/share/openmediavault/engined/rpc/ssh.inc:31:    public function getName()
+/usr/share/openmediavault/engined/rpc/ssh.inc-32-    {
+/usr/share/openmediavault/engined/rpc/ssh.inc-33-        return "SSH";
+/usr/share/openmediavault/engined/rpc/ssh.inc-34-    }
+/usr/share/openmediavault/engined/rpc/ssh.inc-35-
+--
+/usr/share/openmediavault/engined/rpc/kubectl.inc:30:    public function getName()
+/usr/share/openmediavault/engined/rpc/kubectl.inc-31-    {
+/usr/share/openmediavault/engined/rpc/kubectl.inc-32-        return "Kubectl";
+/usr/share/openmediavault/engined/rpc/kubectl.inc-33-    }
+/usr/share/openmediavault/engined/rpc/kubectl.inc-34-
+--
+/usr/share/openmediavault/engined/rpc/rsync.inc:33:    public function getName()
+/usr/share/openmediavault/engined/rpc/rsync.inc-34-    {
+/usr/share/openmediavault/engined/rpc/rsync.inc-35-        return "Rsync";
+/usr/share/openmediavault/engined/rpc/rsync.inc-36-    }
+/usr/share/openmediavault/engined/rpc/rsync.inc-37-
+--
+/usr/share/openmediavault/engined/rpc/cron.inc:31:    public function getName()
+/usr/share/openmediavault/engined/rpc/cron.inc-32-    {
+/usr/share/openmediavault/engined/rpc/cron.inc-33-        return "Cron";
+/usr/share/openmediavault/engined/rpc/cron.inc-34-    }
+/usr/share/openmediavault/engined/rpc/cron.inc-35-
+--
+/usr/share/openmediavault/engined/rpc/nfs.inc:31:    public function getName()
+/usr/share/openmediavault/engined/rpc/nfs.inc-32-    {
+/usr/share/openmediavault/engined/rpc/nfs.inc-33-        return "NFS";
+/usr/share/openmediavault/engined/rpc/nfs.inc-34-    }
+/usr/share/openmediavault/engined/rpc/nfs.inc-35-
+--
+/usr/share/openmediavault/engined/rpc/networkhosts.inc:28:    public function getName()
+/usr/share/openmediavault/engined/rpc/networkhosts.inc-29-    {
+/usr/share/openmediavault/engined/rpc/networkhosts.inc-30-        return "NetworkHosts";
+/usr/share/openmediavault/engined/rpc/networkhosts.inc-31-    }
+/usr/share/openmediavault/engined/rpc/networkhosts.inc-32-
+--
+/usr/share/openmediavault/engined/rpc/compose.inc:36:    public function getName()
+/usr/share/openmediavault/engined/rpc/compose.inc-37-    {
+/usr/share/openmediavault/engined/rpc/compose.inc-38-        return "Compose";
+/usr/share/openmediavault/engined/rpc/compose.inc-39-    }
+/usr/share/openmediavault/engined/rpc/compose.inc-40-
+--
+/usr/share/openmediavault/engined/rpc/tfatotp.inc:28:    public function getName()
+/usr/share/openmediavault/engined/rpc/tfatotp.inc-29-    {
+/usr/share/openmediavault/engined/rpc/tfatotp.inc-30-        return "TFATotp";
+/usr/share/openmediavault/engined/rpc/tfatotp.inc-31-    }
+/usr/share/openmediavault/engined/rpc/tfatotp.inc-32-
+--
+/usr/share/openmediavault/engined/rpc/cterm.inc:21:    public function getName()
+/usr/share/openmediavault/engined/rpc/cterm.inc-22-    {
+/usr/share/openmediavault/engined/rpc/cterm.inc-23-        return "Cterm";
+/usr/share/openmediavault/engined/rpc/cterm.inc-24-    }
+/usr/share/openmediavault/engined/rpc/cterm.inc-25-
+--
+/usr/share/openmediavault/engined/rpc/filesystemmgmt.inc:33:    public function getName()
+/usr/share/openmediavault/engined/rpc/filesystemmgmt.inc-34-    {
+/usr/share/openmediavault/engined/rpc/filesystemmgmt.inc-35-        return "FileSystemMgmt";
+/usr/share/openmediavault/engined/rpc/filesystemmgmt.inc-36-    }
+/usr/share/openmediavault/engined/rpc/filesystemmgmt.inc-37-
+--
+/usr/share/openmediavault/engined/rpc/logfile.inc:31:    public function getName()
+/usr/share/openmediavault/engined/rpc/logfile.inc-32-    {
+/usr/share/openmediavault/engined/rpc/logfile.inc-33-        return "LogFile";
+/usr/share/openmediavault/engined/rpc/logfile.inc-34-    }
+/usr/share/openmediavault/engined/rpc/logfile.inc-35-
+--
+/usr/share/openmediavault/engined/rpc/backup.inc:23:    public function getName()
+/usr/share/openmediavault/engined/rpc/backup.inc-24-    {
+/usr/share/openmediavault/engined/rpc/backup.inc-25-        return 'Backup';
+/usr/share/openmediavault/engined/rpc/backup.inc-26-    }
+/usr/share/openmediavault/engined/rpc/backup.inc-27-
+--
+/usr/share/openmediavault/engined/rpc/apt.inc:31:    public function getName()
+/usr/share/openmediavault/engined/rpc/apt.inc-32-    {
+/usr/share/openmediavault/engined/rpc/apt.inc-33-        return "Apt";
+/usr/share/openmediavault/engined/rpc/apt.inc-34-    }
+/usr/share/openmediavault/engined/rpc/apt.inc-35-
+--
+/usr/share/openmediavault/engined/rpc/rrd.inc:31:    public function getName()
+/usr/share/openmediavault/engined/rpc/rrd.inc-32-    {
+/usr/share/openmediavault/engined/rpc/rrd.inc-33-        return "Rrd";
+/usr/share/openmediavault/engined/rpc/rrd.inc-34-    }
+/usr/share/openmediavault/engined/rpc/rrd.inc-35-
+--
+/usr/share/openmediavault/engined/rpc/syslog.inc:31:    public function getName()
+/usr/share/openmediavault/engined/rpc/syslog.inc-32-    {
+/usr/share/openmediavault/engined/rpc/syslog.inc-33-        return "Syslog";
+/usr/share/openmediavault/engined/rpc/syslog.inc-34-    }
+/usr/share/openmediavault/engined/rpc/syslog.inc-35-
+--
+/usr/share/openmediavault/engined/rpc/rsyncd.inc:31:    public function getName()
+/usr/share/openmediavault/engined/rpc/rsyncd.inc-32-    {
+/usr/share/openmediavault/engined/rpc/rsyncd.inc-33-        return "Rsyncd";
+/usr/share/openmediavault/engined/rpc/rsyncd.inc-34-    }
+/usr/share/openmediavault/engined/rpc/rsyncd.inc-35-
+--
+/usr/share/openmediavault/engined/rpc/exec.inc:31:    public function getName()
+/usr/share/openmediavault/engined/rpc/exec.inc-32-    {
+/usr/share/openmediavault/engined/rpc/exec.inc-33-        return "Exec";
+/usr/share/openmediavault/engined/rpc/exec.inc-34-    }
+/usr/share/openmediavault/engined/rpc/exec.inc-35-
+--
+/usr/share/openmediavault/engined/rpc/powermgmt.inc:31:    public function getName()
+/usr/share/openmediavault/engined/rpc/powermgmt.inc-32-    {
+/usr/share/openmediavault/engined/rpc/powermgmt.inc-33-        return "PowerMgmt";
+/usr/share/openmediavault/engined/rpc/powermgmt.inc-34-    }
+/usr/share/openmediavault/engined/rpc/powermgmt.inc-35-
+--
+/usr/share/openmediavault/engined/rpc/services.inc:33:    public function getName()
+/usr/share/openmediavault/engined/rpc/services.inc-34-    {
+/usr/share/openmediavault/engined/rpc/services.inc-35-        return "Services";
+/usr/share/openmediavault/engined/rpc/services.inc-36-    }
+/usr/share/openmediavault/engined/rpc/services.inc-37-
+--
+/usr/share/openmediavault/engined/rpc/omvextras.inc:25:    public function getName()
+/usr/share/openmediavault/engined/rpc/omvextras.inc-26-    {
+/usr/share/openmediavault/engined/rpc/omvextras.inc-27-        return 'omvextras';
+/usr/share/openmediavault/engined/rpc/omvextras.inc-28-    }
+/usr/share/openmediavault/engined/rpc/omvextras.inc-29-
+--
+/usr/share/openmediavault/engined/rpc/crictl.inc:30:    public function getName()
+/usr/share/openmediavault/engined/rpc/crictl.inc-31-    {
+/usr/share/openmediavault/engined/rpc/crictl.inc-32-        return "Crictl";
+/usr/share/openmediavault/engined/rpc/crictl.inc-33-    }
+/usr/share/openmediavault/engined/rpc/crictl.inc-34-
+--
+/usr/share/openmediavault/engined/rpc/collectddisk.inc:28:    public function getName()
+/usr/share/openmediavault/engined/rpc/collectddisk.inc-29-    {
+/usr/share/openmediavault/engined/rpc/collectddisk.inc-30-        return "CollectdDisk";
+/usr/share/openmediavault/engined/rpc/collectddisk.inc-31-    }
+/usr/share/openmediavault/engined/rpc/collectddisk.inc-32-
+--
+/usr/share/openmediavault/engined/rpc/wbprefs.inc:28:    public function getName()
+/usr/share/openmediavault/engined/rpc/wbprefs.inc-29-    {
+/usr/share/openmediavault/engined/rpc/wbprefs.inc-30-        return "WbPrefs";
+/usr/share/openmediavault/engined/rpc/wbprefs.inc-31-    }
+/usr/share/openmediavault/engined/rpc/wbprefs.inc-32-
+--
+/usr/share/openmediavault/engined/rpc/kvm.inc:26:    public function getName()
+/usr/share/openmediavault/engined/rpc/kvm.inc-27-    {
+/usr/share/openmediavault/engined/rpc/kvm.inc-28-        return 'Kvm';
+/usr/share/openmediavault/engined/rpc/kvm.inc-29-    }
+/usr/share/openmediavault/engined/rpc/kvm.inc-30-
+--
+/usr/share/openmediavault/engined/rpc/webgui.inc:33:    public function getName()
+/usr/share/openmediavault/engined/rpc/webgui.inc-34-    {
+/usr/share/openmediavault/engined/rpc/webgui.inc-35-        return "WebGui";
+/usr/share/openmediavault/engined/rpc/webgui.inc-36-    }
+/usr/share/openmediavault/engined/rpc/webgui.inc-37-
+--
+/usr/share/openmediavault/engined/rpc/system.inc:33:    public function getName()
+/usr/share/openmediavault/engined/rpc/system.inc-34-    {
+/usr/share/openmediavault/engined/rpc/system.inc-35-        return "System";
+/usr/share/openmediavault/engined/rpc/system.inc-36-    }
+/usr/share/openmediavault/engined/rpc/system.inc-37-
+--
+/usr/share/openmediavault/engined/rpc/envvars.inc:28:    public function getName()
+/usr/share/openmediavault/engined/rpc/envvars.inc-29-    {
+/usr/share/openmediavault/engined/rpc/envvars.inc-30-        return "EnvVars";
+/usr/share/openmediavault/engined/rpc/envvars.inc-31-    }
+/usr/share/openmediavault/engined/rpc/envvars.inc-32-
+--
+/usr/share/openmediavault/engined/rpc/k3s.inc:30:    public function getName()
+/usr/share/openmediavault/engined/rpc/k3s.inc-31-    {
+/usr/share/openmediavault/engined/rpc/k3s.inc-32-        return "K3s";
+/usr/share/openmediavault/engined/rpc/k3s.inc-33-    }
+/usr/share/openmediavault/engined/rpc/k3s.inc-34-
+--
+/usr/share/openmediavault/engined/rpc/pluginmgmt.inc:31:    public function getName()
+/usr/share/openmediavault/engined/rpc/pluginmgmt.inc-32-    {
+/usr/share/openmediavault/engined/rpc/pluginmgmt.inc-33-        return "Plugin";
+/usr/share/openmediavault/engined/rpc/pluginmgmt.inc-34-    }
+/usr/share/openmediavault/engined/rpc/pluginmgmt.inc-35-
+--
+/usr/share/openmediavault/engined/rpc/notification.inc:31:    public function getName()
+/usr/share/openmediavault/engined/rpc/notification.inc-32-    {
+/usr/share/openmediavault/engined/rpc/notification.inc-33-        return "Notification";
+/usr/share/openmediavault/engined/rpc/notification.inc-34-    }
+/usr/share/openmediavault/engined/rpc/notification.inc-35-
+--
+/usr/share/openmediavault/engined/rpc/notification.inc:269:    public function getName()
+/usr/share/openmediavault/engined/rpc/notification.inc-270-    {
+/usr/share/openmediavault/engined/rpc/notification.inc-271-        return "EmailNotification";
+/usr/share/openmediavault/engined/rpc/notification.inc-272-    }
+/usr/share/openmediavault/engined/rpc/notification.inc-273-
+--
+/usr/share/openmediavault/engined/rpc/apttool.inc:25:    public function getName()
+/usr/share/openmediavault/engined/rpc/apttool.inc-26-    {
+/usr/share/openmediavault/engined/rpc/apttool.inc-27-        return 'AptTool';
+/usr/share/openmediavault/engined/rpc/apttool.inc-28-    }
+/usr/share/openmediavault/engined/rpc/apttool.inc-29-
+--
+/usr/share/openmediavault/engined/rpc/scripts.inc:21:    public function getName()
+/usr/share/openmediavault/engined/rpc/scripts.inc-22-    {
+/usr/share/openmediavault/engined/rpc/scripts.inc-23-        return 'Scripts';
+/usr/share/openmediavault/engined/rpc/scripts.inc-24-    }
+/usr/share/openmediavault/engined/rpc/scripts.inc-25-
+--
+/usr/share/openmediavault/engined/rpc/folderbrowser.inc:33:    public function getName()
+/usr/share/openmediavault/engined/rpc/folderbrowser.inc-34-    {
+/usr/share/openmediavault/engined/rpc/folderbrowser.inc-35-        return "FolderBrowser";
+/usr/share/openmediavault/engined/rpc/folderbrowser.inc-36-    }
+/usr/share/openmediavault/engined/rpc/folderbrowser.inc-37-
+--
+/usr/share/openmediavault/engined/rpc/smart.inc:31:    public function getName()
+/usr/share/openmediavault/engined/rpc/smart.inc-32-    {
+/usr/share/openmediavault/engined/rpc/smart.inc-33-        return "Smart";
+/usr/share/openmediavault/engined/rpc/smart.inc-34-    }
+/usr/share/openmediavault/engined/rpc/smart.inc-35-
+--
+/usr/share/openmediavault/engined/rpc/aptmgmt.inc:28:    public function getName()
+/usr/share/openmediavault/engined/rpc/aptmgmt.inc-29-    {
+/usr/share/openmediavault/engined/rpc/aptmgmt.inc-30-        return "AptMgmt";
+/usr/share/openmediavault/engined/rpc/aptmgmt.inc-31-    }
+/usr/share/openmediavault/engined/rpc/aptmgmt.inc-32-
+--
+/usr/share/openmediavault/engined/rpc/tftp.inc:28:    public function getName()
+/usr/share/openmediavault/engined/rpc/tftp.inc-29-    {
+/usr/share/openmediavault/engined/rpc/tftp.inc-30-        return "TFTP";
+/usr/share/openmediavault/engined/rpc/tftp.inc-31-    }
+/usr/share/openmediavault/engined/rpc/tftp.inc-32-

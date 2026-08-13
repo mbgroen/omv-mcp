@@ -1,0 +1,13 @@
+21:class OMVRpcServiceKernel extends \OMV\Rpc\ServiceAbstract
+30:        $this->registerMethod('getArch');
+32:        $this->registerMethod('setKernel');
+33:        $this->registerMethod('unsetKernel');
+34:        $this->registerMethod('getKernelList');
+35:        $this->registerMethod('deleteKernel');
+37:        $this->registerMethod('doCommand');
+38:        $this->registerMethod('doProxmox');
+39:        $this->registerMethod('doMemtest');
+40:        $this->registerMethod('doDebian');
+41:        $this->registerMethod('doUpdateGrub');
+43:        $this->registerMethod('getIsoList');
+44:        $this->registerMethod('writeIso');

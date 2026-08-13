@@ -1,0 +1,10 @@
+26:class Notification extends \OMV\Rpc\ServiceAbstract
+41:        $this->registerMethod("getList");
+42:        $this->registerMethod("setList");
+43:        $this->registerMethod("get");
+44:        $this->registerMethod("set");
+45:        $this->registerMethod("isEnabled");
+264:class OMVRpcServiceEmailNotification extends \OMV\Rpc\ServiceAbstract
+279:        $this->registerMethod("get");
+280:        $this->registerMethod("set");
+281:        $this->registerMethod("sendTestEmail");

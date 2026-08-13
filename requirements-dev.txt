@@ -1,0 +1,12 @@
+# Only needed to run the test suite.
+#
+# Deliberately NOT `-r requirements.txt`: the tests stub out the MCP SDK, so
+# pulling it in would impose a Python 3.10+ floor on a suite that runs fine on
+# 3.9.
+#
+# The tests need nothing installed at all:
+#     python3 -m unittest discover -s tests -t tests -v
+#
+# pytest is optional and just gives nicer output.
+
+pytest>=8.0

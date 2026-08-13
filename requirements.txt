@@ -1,0 +1,10 @@
+# Runtime dependencies for omv_mcp.py.
+#
+# NOTE: the MCP SDK requires Python 3.10 or newer. The Python that ships with
+# macOS is 3.9, where `pip install mcp` fails with "No matching distribution
+# found". Install a newer interpreter (e.g. `brew install python@3.12`) and
+# create the virtualenv with that.
+#
+# Beyond this, the server uses only the standard library and the system ssh.
+
+mcp>=1.2

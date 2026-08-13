@@ -1,0 +1,1 @@
+{"response":null,"error":{"code":0,"message":"The method 'doesNotExist' does not exist for the RPC service 'kernel'.","trace":"OMV\\HttpErrorException: The method 'doesNotExist' does not exist for the RPC service 'kernel'. in \/usr\/share\/php\/openmediavault\/rpc\/rpc.inc:103\nStack trace:\n#0 \/usr\/sbin\/omv-engined(601): OMV\\Rpc\\Rpc::call()\n#1 {main}"}}
