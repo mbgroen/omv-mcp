@@ -2,9 +2,9 @@
   "manifest_version": "0.3",
   "name": "omv-mcp",
   "display_name": "OpenMediaVault",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "Manage an OpenMediaVault NAS over SSH.",
-  "long_description": "Gives Claude access to an OpenMediaVault NAS through OMV's own RPC layer -- the same one the web interface uses -- over an ordinary SSH connection. Inspect disks, filesystems, shared folders, users and S.M.A.R.T. health; restart services; apply configuration changes; run background jobs and read their output.\n\nNothing is installed on the NAS and no extra port is opened. Authentication is your existing SSH key.\n\nRather than a fixed list of narrow tools, the extension discovers the services and methods your particular installation offers at runtime, so OMV plugins you install later work straight away.\n\nStart with **Read-only mode** enabled to explore safely.",
+  "long_description": "Gives Claude access to an OpenMediaVault NAS through OMV's own RPC layer -- the same one the web interface uses -- over an ordinary SSH connection. Inspect disks, filesystems, shared folders, users and S.M.A.R.T. health; restart services; apply configuration changes; run background jobs and read their output.\n\nNothing is installed on the NAS and no extra port is opened. Authentication is your existing SSH key.\n\nRather than a fixed list of narrow tools, the extension discovers the services and methods your particular installation offers at runtime, so OMV plugins you install later work straight away.\n\nStart with **Read-only mode** enabled to explore safely. When you later turn it off, click Save and then fully quit and reopen Claude Desktop -- these settings are read once when the server starts, so a running server keeps the old value.",
   "author": {
     "name": "Michiel Groen",
     "url": "https://github.com/mbgroen"
@@ -18,13 +18,22 @@
   },
   "icon": "icon.png",
   "license": "MIT",
-  "keywords": ["openmediavault", "omv", "nas", "ssh", "storage", "homelab"],
+  "keywords": [
+    "openmediavault",
+    "omv",
+    "nas",
+    "ssh",
+    "storage",
+    "homelab"
+  ],
   "server": {
     "type": "python",
     "entry_point": "server/main.py",
     "mcp_config": {
       "command": "python3",
-      "args": ["${__dirname}/server/main.py"],
+      "args": [
+        "${__dirname}/server/main.py"
+      ],
       "env": {
         "OMV_SSH_HOST": "${user_config.ssh_host}",
         "OMV_SSH_USER": "${user_config.ssh_user}",
@@ -69,7 +78,7 @@
     "ssh_key": {
       "type": "file",
       "title": "SSH private key",
-      "description": "Optional. Leave empty to use your ssh-agent and ~/.ssh/config, which is usually what you want. Password logins are not supported: the connection runs with BatchMode enabled, so it can never stop to prompt you.",
+      "description": "Optional. Leave empty to use your ssh-agent and ~/.ssh/config, which is usually what you want. If you do pick a file, choose the PRIVATE key (for example id_ed25519), not the matching .pub file next to it. Password logins are not supported: the connection runs with BatchMode enabled, so it can never stop to prompt you.",
       "required": false
     },
     "rpc_user": {
@@ -89,14 +98,14 @@
     "readonly": {
       "type": "boolean",
       "title": "Read-only mode",
-      "description": "Refuses anything that does not look like a read operation, and disables shell access. Recommended while you get a feel for what the extension does. Turn it off when you want Claude to actually change settings.",
+      "description": "Refuses anything that does not look like a read operation, and disables shell access. Recommended while you get a feel for what the extension does. Changing this takes effect only after you Save and fully quit and reopen Claude Desktop -- the setting is read once when the server starts.",
       "default": true,
       "required": false
     },
     "allow_shell": {
       "type": "boolean",
       "title": "Allow arbitrary shell commands",
-      "description": "Adds a tool that runs any shell command on the NAS, as the SSH user. Useful for logs, docker and package state -- but it is unrestricted, so leave it off unless you need it.",
+      "description": "Adds a tool that runs any shell command on the NAS, as the SSH user. Useful for logs, docker and package state -- but it is unrestricted, so leave it off unless you need it. Like read-only mode, this takes effect after a full restart of Claude Desktop.",
       "default": false,
       "required": false
     },
@@ -138,7 +147,11 @@
   ],
   "compatibility": {
     "claude_desktop": ">=0.10.0",
-    "platforms": ["darwin", "win32", "linux"],
+    "platforms": [
+      "darwin",
+      "win32",
+      "linux"
+    ],
     "runtimes": {
       "python": ">=3.9 <4"
     }

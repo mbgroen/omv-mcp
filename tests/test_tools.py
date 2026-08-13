@@ -129,6 +129,87 @@ class TestReadonly(unittest.TestCase):
         self.assertIn("OMV_READONLY", str(ctx.exception))
 
 
+class TestRefusalMessages(unittest.TestCase):
+    """
+    A refusal has to explain how to lift it.
+
+    The settings are read once at import, so someone who flips the toggle and
+    retries immediately still gets refused, with the settings screen appearing
+    to contradict the server. The message is the only place that can say so.
+    """
+
+    def setUp(self):
+        self.module = load_module(OMV_READONLY="1")
+        self.module._exec = lambda *a, **k: self.fail("should not have executed")
+
+    def _message(self, call):
+        with self.assertRaises(self.module.OmvError) as ctx:
+            call()
+        return str(ctx.exception)
+
+    def test_call_refusal_names_the_setting_and_the_restart(self):
+        message = self._message(lambda: self.module.omv_call("Kvm", "doCommand"))
+
+        self.assertIn("Kvm.doCommand", message)
+        self.assertIn("Read-only mode", message)
+        self.assertIn("restart", message.lower())
+
+    def test_call_refusal_still_helps_a_manual_setup(self):
+        message = self._message(lambda: self.module.omv_call("Kvm", "doCommand"))
+        self.assertIn("OMV_READONLY=0", message)
+
+    def test_shell_refusal_matches_the_call_refusal(self):
+        """The old text was a bare "OMV_READONLY is set." with no way forward."""
+        message = self._message(lambda: self.module.omv_shell("uptime"))
+
+        self.assertIn("Read-only mode", message)
+        self.assertIn("restart", message.lower())
+        self.assertIn("OMV_READONLY=0", message)
+
+
+class TestConfigWarnings(unittest.TestCase):
+    def test_public_key_is_flagged(self):
+        """
+        The extension's file picker opens in ~/.ssh, where the .pub sits next to
+        the private key and is the easier one to click. It usually still works
+        via the ssh-agent, so the mistake stays hidden until it does not.
+        """
+        module = load_module(OMV_SSH_HOST="nas.local", OMV_SSH_KEY="~/.ssh/id_ed25519.pub")
+        warnings = module._config_warnings()
+
+        self.assertEqual(len(warnings), 1)
+        self.assertIn("public key", warnings[0])
+        self.assertIn(".pub", warnings[0])
+
+    def test_missing_key_file_is_flagged(self):
+        module = load_module(OMV_SSH_HOST="nas.local", OMV_SSH_KEY="/nope/absent_key")
+        warnings = module._config_warnings()
+
+        self.assertEqual(len(warnings), 1)
+        self.assertIn("does not exist", warnings[0])
+
+    def test_no_key_configured_is_not_a_warning(self):
+        """Empty means "use the ssh-agent", which is the recommended setup."""
+        module = load_module(OMV_SSH_HOST="nas.local")
+        self.assertEqual(module._config_warnings(), [])
+
+    def test_an_existing_private_key_is_not_flagged(self):
+        module = load_module(OMV_SSH_HOST="nas.local", OMV_SSH_KEY=__file__)
+        self.assertEqual(module._config_warnings(), [])
+
+    def test_warnings_surface_in_connection_info(self):
+        module = load_module(OMV_SSH_HOST="nas.local", OMV_SSH_KEY="~/.ssh/id_ed25519.pub")
+        module._exec = lambda *a, **k: "8.5.6-1"
+
+        self.assertIn("public key", module.omv_connection_info()["warnings"][0])
+
+    def test_no_warnings_key_when_the_config_is_clean(self):
+        module = load_module(OMV_SSH_HOST="nas.local")
+        module._exec = lambda *a, **k: "8.5.6-1"
+
+        self.assertNotIn("warnings", module.omv_connection_info())
+
+
 class TestOmvShell(unittest.TestCase):
     def test_disabled_does_not_register_the_tool(self):
         module = load_module(OMV_ALLOW_SHELL="0")
@@ -230,6 +311,29 @@ class TestConnectionInfo(unittest.TestCase):
         self.assertEqual(info["omv_version"], "8.5.6-1")
         self.assertEqual(info["mode"], "ssh to root@nas.local:22")
         self.assertEqual(info["rpc_user"], "admin")
+        self.assertEqual(info["server_version"], module.__version__)
+
+    def test_reports_that_settings_are_a_startup_snapshot(self):
+        """
+        Without this, values that contradict the settings screen look like a
+        bug rather than a server that has not been restarted yet.
+        """
+        module = load_module(OMV_SSH_HOST="nas.local")
+        module._exec = lambda *a, **k: "8.5.6-1"
+
+        note = module.omv_connection_info()["settings_read_at"]
+        self.assertIn("process start", note)
+        self.assertIn("quit and reopen", note)
+
+    def test_version_is_reported_even_when_unreachable(self):
+        """Knowing which build answered matters most when something is wrong."""
+        module = load_module(OMV_SSH_HOST="nas.local")
+
+        def broken(*a, **k):
+            raise module.OmvError("Permission denied (publickey).")
+
+        module._exec = broken
+        self.assertEqual(module.omv_connection_info()["server_version"], module.__version__)
 
     def test_asks_dpkg_because_etc_version_is_gone_in_omv8(self):
         module = load_module()

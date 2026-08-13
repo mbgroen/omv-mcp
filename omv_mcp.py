@@ -52,7 +52,7 @@ from typing import Any
 
 from mcp_stdio import Server
 
-__version__ = "1.1.1"
+__version__ = "1.2.0"
 
 mcp = Server(
     "openmediavault",
@@ -141,6 +141,19 @@ CLASS_DECL_RE = re.compile(r"^\s*(?:abstract\s+|final\s+)*class\s+[A-Za-z0-9_\\]
 READ_PREFIXES = (
     "get", "enumerate", "list", "is", "has", "read",
     "query", "find", "exists", "count", "check",
+)
+
+
+# Settings are read once, at import, so a running server holds the values it
+# was started with. Someone who flips the toggle in the extension settings and
+# immediately retries gets the old behaviour with no hint as to why, so every
+# refusal has to say so itself. The wording covers both ways of configuring the
+# server because the message cannot tell which one is in use.
+HOW_TO_LEAVE_READONLY = (
+    'Turn off "Read-only mode" in the extension settings and click Save, then '
+    "fully quit and reopen Claude Desktop -- settings are read once when the "
+    "server starts, so a running server keeps the old value. Configured by hand "
+    "instead? Set OMV_READONLY=0 and restart the server."
 )
 
 
@@ -334,6 +347,32 @@ def _service_index() -> dict[str, tuple[str, int]]:
     return services
 
 
+def _config_warnings() -> list[str]:
+    """
+    Flag settings that are probably mistakes but do not stop the server.
+
+    The extension's key field opens a file picker in ~/.ssh, where the public
+    key sits next to the private one and is the easier of the two to click.
+    Picking it usually still works -- the ssh-agent quietly supplies the real
+    key -- so the mistake only surfaces later, on a machine without the agent
+    loaded, as an unexplained "Permission denied".
+    """
+    warnings: list[str] = []
+    if not SSH_KEY:
+        return warnings
+
+    path = os.path.expanduser(SSH_KEY)
+    if path.endswith(".pub"):
+        warnings.append(
+            f"OMV_SSH_KEY points at a public key ({SSH_KEY}). Select the private "
+            f"key instead: the same path without the .pub suffix."
+        )
+    elif not os.path.exists(path):
+        warnings.append(f"OMV_SSH_KEY points at a file that does not exist: {SSH_KEY}")
+
+    return warnings
+
+
 def _validate_ident(value: str, label: str) -> str:
     if not IDENT_RE.match(value or ""):
         raise OmvError(
@@ -421,8 +460,8 @@ def omv_call(service: str, method: str, params: dict | None = None,
 
     if READONLY and not method.lower().startswith(READ_PREFIXES):
         raise OmvError(
-            f"Refused: {service}.{method} does not look like a read method and "
-            "OMV_READONLY is set. Set OMV_READONLY=0 to allow it."
+            f"Refused: {service}.{method} is not a read method and read-only "
+            f"mode is on. {HOW_TO_LEAVE_READONLY}"
         )
 
     cmd = f"omv-rpc -u {shlex.quote(RPC_USER)} {shlex.quote(service)} {shlex.quote(method)}"
@@ -485,7 +524,10 @@ if ALLOW_SHELL:
             timeout: Timeout in seconds.
         """
         if READONLY:
-            raise OmvError("Refused: OMV_READONLY is set.")
+            raise OmvError(
+                "Refused: shell access is disabled while read-only mode is on. "
+                f"{HOW_TO_LEAVE_READONLY}"
+            )
         if not command.strip():
             raise OmvError("Empty command.")
         return {"output": _exec(command, timeout=timeout)}
@@ -499,12 +541,24 @@ def omv_connection_info() -> dict[str, Any]:
     Useful as a first smoke test and when troubleshooting connectivity.
     """
     info: dict[str, Any] = {
+        "server_version": __version__,
         "mode": f"ssh to {SSH_USER}@{SSH_HOST}:{SSH_PORT}" if SSH_HOST else "local",
         "rpc_user": RPC_USER,
         "sudo": USE_SUDO,
         "readonly": READONLY,
         "shell_enabled": ALLOW_SHELL,
+        # Without this, a reader who has just changed a toggle sees values that
+        # flatly contradict the settings screen and has no way to explain it.
+        "settings_read_at": (
+            "process start -- if these disagree with the extension settings, the "
+            "server is still running with the values it was started with; fully "
+            "quit and reopen Claude Desktop"
+        ),
     }
+
+    warnings = _config_warnings()
+    if warnings:
+        info["warnings"] = warnings
     try:
         # OMV 8 no longer ships /etc/openmediavault/version, so ask dpkg first.
         info["omv_version"] = _exec(

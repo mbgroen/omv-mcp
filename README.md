@@ -71,7 +71,7 @@ so nothing has to be edited in any file. On Linux, skip to
 | NAS hostname or IP address | — | Required. An IP, or a host from your `~/.ssh/config`. |
 | SSH username | `root` | The account used to log in |
 | SSH port | `22` | Change only for a non-standard port |
-| SSH private key | *(empty)* | Optional; empty uses your ssh-agent and `~/.ssh/config` |
+| SSH private key | *(empty)* | Optional; empty uses your ssh-agent and `~/.ssh/config`. If you do pick a file, choose the **private** key — not the `.pub` next to it. |
 | OpenMediaVault user | `admin` | The OMV login the RPC runs as — not the SSH user |
 | Run commands with sudo | off | Turn on when the SSH user is not root |
 | **Read-only mode** | **on** | Refuses anything that is not a read operation |
@@ -80,6 +80,16 @@ so nothing has to be edited in any file. On Linux, skip to
 
 Read-only mode is **on by default**. Turn it off once you are comfortable letting Claude
 change things.
+
+> **After changing any setting: click Save, then fully quit Claude Desktop (⌘Q on macOS)
+> and reopen it.** The server reads its settings once at startup, so a running server keeps
+> the values it was started with — closing the window is not enough. Until you do, writes
+> keep getting refused and `omv_connection_info` reports the old values, which looks like
+> the setting did not save. It did.
+
+If you also use omv-mcp through another client, note that each registration is a separate
+server with its own settings. `omv_connection_info` reports which one answered, so check
+there first when the behaviour does not match the toggles you just set.
 
 You still need working SSH key access to the NAS — see [SSH setup](#ssh-setup) below.
 
@@ -374,7 +384,9 @@ a NAS actually returns rather than against an idealised sample.
 | `No RPC services found` | The SSH user cannot read `/usr/share/openmediavault/engined/rpc` |
 | `command not found: omv-rpc` | `/usr/sbin` is not in the SSH user's PATH — turn on sudo |
 | `Command exceeded 60s` | Raise the timeout, or use `omv_wait_for_task` for long jobs |
-| A method is refused as "not a read method" | Read-only mode is on |
+| A method is refused as "not a read method" | Read-only mode is on. If you just turned it off, fully quit and reopen Claude Desktop. |
+| Settings disagree with `omv_connection_info` | The server is still running with its startup values, or a second registration in another client answered |
+| `Permission denied (publickey)` after picking a key file | You selected the `.pub` instead of the private key — `omv_connection_info` flags this under `warnings` |
 | A newly installed plugin is invisible | Restart the MCP server; the service list is cached |
 
 Claude Desktop writes per-server logs to
