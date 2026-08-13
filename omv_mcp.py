@@ -22,6 +22,10 @@ system `ssh` binary. That reuses your existing SSH config, keys and agent --
 no session cookies, no certificate handling, and no extra port open on the
 NAS. Leave OMV_SSH_HOST empty to run the server directly on the NAS instead.
 
+The MCP side speaks stdio through mcp_stdio.py, a standard-library-only
+implementation. This server therefore has no third-party dependencies and
+runs on any Python 3.9 or newer.
+
 Configuration (environment variables)
 -------------------------------------
 OMV_SSH_HOST     Hostname/IP of the NAS. Empty = run commands locally.
@@ -46,28 +50,73 @@ import time
 from functools import lru_cache
 from typing import Any
 
-try:
-    # MCP SDK 2.x
-    from mcp.server.mcpserver import MCPServer as _Server
-except ImportError:  # pragma: no cover
-    # MCP SDK 1.x -- same decorator and run() API, different name.
-    from mcp.server.fastmcp import FastMCP as _Server
+from mcp_stdio import Server
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 
-mcp = _Server("openmediavault")
+mcp = Server(
+    "openmediavault",
+    __version__,
+    instructions=(
+        "Manages an OpenMediaVault NAS through its own RPC layer. Start with "
+        "omv_connection_info to confirm connectivity, then omv_list_services "
+        "and omv_list_methods to discover what this particular installation "
+        "offers before calling omv_call. Service names are case sensitive."
+    ),
+)
 
 # --- Configuration ----------------------------------------------------------
 
+TRUTHY = {"1", "true", "yes", "on"}
+FALSEY = {"0", "false", "no", "off", ""}
+
+
+def env_flag(name: str, default: bool) -> bool:
+    """
+    Read a boolean setting.
+
+    Accepts more than "1" on purpose: when this server runs as a Claude Desktop
+    extension the values come from checkboxes in the settings UI and arrive as
+    "true"/"false", while a hand-written config is more likely to say "1".
+    Anything unrecognised falls back to the default rather than silently
+    counting as off, which for OMV_READONLY would be the dangerous direction.
+    """
+    raw = os.environ.get(name)
+    if raw is None:
+        return default
+    value = raw.strip().lower()
+    if value in TRUTHY:
+        return True
+    if value in FALSEY:
+        return False
+    return default
+
+
+def env_int(name: str, default: int) -> int:
+    """
+    Read a numeric setting, tolerating the "60.0" a number input may produce.
+
+    An unparseable value falls back to the default; refusing to start over a
+    malformed timeout would be worse than using a sane one.
+    """
+    raw = os.environ.get(name, "").strip()
+    if not raw:
+        return default
+    try:
+        return int(float(raw))
+    except ValueError:
+        return default
+
+
 SSH_HOST = os.environ.get("OMV_SSH_HOST", "").strip()
-SSH_USER = os.environ.get("OMV_SSH_USER", "root").strip()
-SSH_PORT = os.environ.get("OMV_SSH_PORT", "22").strip()
+SSH_USER = os.environ.get("OMV_SSH_USER", "").strip() or "root"
+SSH_PORT = str(env_int("OMV_SSH_PORT", 22))
 SSH_KEY = os.environ.get("OMV_SSH_KEY", "").strip()
-RPC_USER = os.environ.get("OMV_RPC_USER", "admin").strip()
-USE_SUDO = os.environ.get("OMV_SUDO", "0") == "1"
-READONLY = os.environ.get("OMV_READONLY", "0") == "1"
-ALLOW_SHELL = os.environ.get("OMV_ALLOW_SHELL", "1") == "1"
-TIMEOUT = int(os.environ.get("OMV_TIMEOUT", "60"))
+RPC_USER = os.environ.get("OMV_RPC_USER", "").strip() or "admin"
+USE_SUDO = env_flag("OMV_SUDO", False)
+READONLY = env_flag("OMV_READONLY", False)
+ALLOW_SHELL = env_flag("OMV_ALLOW_SHELL", True)
+TIMEOUT = env_int("OMV_TIMEOUT", 60)
 
 # Where the RPC sources live; plugins drop their own .inc files here too.
 RPC_DIR = "/usr/share/openmediavault/engined/rpc"

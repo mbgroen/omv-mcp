@@ -7,27 +7,35 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        # The suite stubs out the MCP SDK, so it runs on any supported Python.
-        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: ["3.9", "3.13"]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Run tests
-        run: python -m unittest discover -s tests -t tests -v
+      # No install step: the server and its tests use only the standard library.
+      - run: python -m unittest discover -s tests -t tests -v
 
-  import-check:
-    # Verifies the module imports against the real MCP SDK, not just the stub.
+  bundle:
+    # The manifest, the icon and the .mcpb must stay buildable from source.
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
-          python-version: "3.12"
-      - run: pip install -r requirements.txt
-      - run: python -c "import omv_mcp; print(omv_mcp.__version__)"
+          python-version: "3.13"
+      - name: Regenerate the icon and check it is unchanged
+        run: |
+          python scripts/make_icon.py icon.png
+          git diff --exit-code icon.png
+      - name: Build the extension bundle
+        run: python scripts/build_mcpb.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mcpb-bundle
+          path: dist/*.mcpb

@@ -2,7 +2,7 @@
 
 An [MCP](https://modelcontextprotocol.io) server that lets an AI assistant manage an
 **OpenMediaVault** NAS — check disks and filesystems, inspect shares and users, read
-S.M.A.R.T. data, restart services, apply configuration changes, run background jobs and
+S.M.A.R.T. health, restart services, apply configuration changes, run background jobs and
 tail their output.
 
 It connects over plain SSH and drives OMV's own `omv-rpc` CLI, which is the exact same
@@ -13,6 +13,10 @@ opened.
 MCP client  --stdio-->  omv_mcp.py  --ssh-->  NAS  -->  omv-rpc  -->  OMV RPC layer
  (your PC)              (your PC)                        (the same layer as the web UI)
 ```
+
+**No dependencies.** The server is pure standard library — including its MCP protocol
+layer — so there is no virtualenv to create, nothing to `pip install`, and it runs on any
+Python 3.9 or newer.
 
 ## Why only six tools
 
@@ -29,56 +33,83 @@ works immediately, with no update to this server.
 | | |
 |---|---|
 | **NAS** | OpenMediaVault 7 or 8, reachable over SSH |
-| **Your machine** | Python 3.10 or newer (the MCP SDK requires it) |
+| **Your machine** | Python 3.9 or newer. That includes the Python already on macOS and most Linux systems; on Windows, install it from [python.org](https://www.python.org/downloads/) or the Microsoft Store. |
 | **Access** | An SSH key that can log in without a password, and a user who may run `omv-rpc` |
 
 Developed and verified against **OpenMediaVault 8.5.6-1 (Synchrony)** on Debian 13.
 OMV 7 uses the same RPC layer and is expected to work; reports welcome.
 
-The server itself has no dependencies beyond the MCP SDK and your system's `ssh` binary.
+---
 
-## Installation
+## Install as a Claude Desktop extension (recommended)
 
-### 1. Get the code
+The extension gives you a settings panel — NAS address, SSH user, key, read-only mode —
+so nothing has to be edited in any file.
+
+1. Download `omv-mcp-<version>.mcpb` from the
+   [latest release](https://github.com/mbgroen/omv-mcp/releases/latest).
+2. Double-click it, or drag it onto the Claude Desktop window. (Also available under
+   *Settings → Extensions → Advanced settings → Install Extension…*)
+3. Fill in at least the **NAS hostname or IP address**, then enable the extension.
+
+<!-- Settings offered by the extension -->
+
+| Setting | Default | What it does |
+|---|---|---|
+| NAS hostname or IP address | — | Required. An IP, or a host from your `~/.ssh/config`. |
+| SSH username | `root` | The account used to log in |
+| SSH port | `22` | Change only for a non-standard port |
+| SSH private key | *(empty)* | Optional; empty uses your ssh-agent and `~/.ssh/config` |
+| OpenMediaVault user | `admin` | The OMV login the RPC runs as — not the SSH user |
+| Run commands with sudo | off | Turn on when the SSH user is not root |
+| **Read-only mode** | **on** | Refuses anything that is not a read operation |
+| Allow arbitrary shell commands | off | Adds the unrestricted `omv_shell` tool |
+| Command timeout | `60`s | Per-command limit |
+
+Read-only mode is **on by default**. Turn it off once you are comfortable letting Claude
+change things.
+
+You still need working SSH key access to the NAS — see [SSH setup](#ssh-setup) below.
+
+### Building the bundle yourself
 
 ```bash
 git clone https://github.com/mbgroen/omv-mcp.git
 cd omv-mcp
-python3 -m venv .venv
-.venv/bin/pip install -r requirements.txt
+python3 scripts/build_mcpb.py
 ```
 
-Check your Python version first — `python3 --version` must report 3.10 or higher. On
-macOS the system Python is 3.9 and `pip install mcp` will fail with *No matching
-distribution found*; install a newer one, for example with `brew install python@3.12`.
+The `.mcpb` lands in `dist/`. It is an ordinary zip archive with a `manifest.json` at the
+root, so the build script needs nothing but the standard library — no Node.js, no `mcpb`
+CLI.
 
-### 2. Set up SSH access
+---
 
-The server runs `ssh` with `BatchMode=yes`, so password logins will not work. This is
-deliberate: an MCP server has no way to prompt you for a password. Use a key.
+## Install manually
+
+Useful for Claude Code, for other MCP clients, or if you would rather not use an
+extension.
 
 ```bash
-ssh-keygen -t ed25519 -C "omv-mcp"        # skip if you already have a key
-ssh-copy-id root@192.168.1.100            # use your own NAS address
-ssh root@192.168.1.100 'omv-rpc -u admin System getInformation'
+git clone https://github.com/mbgroen/omv-mcp.git
 ```
 
-If that last command prints JSON, the server will work.
+There is nothing to install. Point your client at `omv_mcp.py` with your system Python.
 
-**Root login refused?** OMV disables SSH root login by default. Either enable it under
-*Services → SSH → Permit root login*, or use your own account and set `OMV_SUDO=1` below —
-that account needs to be in the `sudo` group.
+**Claude Code:**
 
-### 3. Configure your MCP client
+```bash
+claude mcp add openmediavault -e OMV_SSH_HOST=192.168.1.100 -e OMV_READONLY=1 -- python3 "$PWD/omv_mcp.py"
+```
 
-**Claude Desktop** — edit `~/Library/Application Support/Claude/claude_desktop_config.json`
-on macOS, or `%APPDATA%\Claude\claude_desktop_config.json` on Windows:
+**Claude Desktop**, in `~/Library/Application Support/Claude/claude_desktop_config.json`
+(macOS) or `%APPDATA%\Claude\claude_desktop_config.json` (Windows):
 
 ```json
 {
   "mcpServers": {
     "openmediavault": {
-      "command": "/absolute/path/to/omv-mcp/.venv/bin/python",
+      "command": "python3",
       "args": ["/absolute/path/to/omv-mcp/omv_mcp.py"],
       "env": {
         "OMV_SSH_HOST": "192.168.1.100",
@@ -91,23 +122,12 @@ on macOS, or `%APPDATA%\Claude\claude_desktop_config.json` on Windows:
 }
 ```
 
-**Claude Code** — from the repository directory:
-
-```bash
-claude mcp add openmediavault -e OMV_SSH_HOST=192.168.1.100 -e OMV_READONLY=1 -- "$PWD/.venv/bin/python" "$PWD/omv_mcp.py"
-```
-
-Use absolute paths, not `~`. Restart the client completely afterwards — quitting the
+Use absolute paths, not `~`. Restart the client completely afterwards — closing the
 window is not enough for Claude Desktop.
 
-### 4. Verify
+### Environment variables
 
-Ask your assistant *"Is my OMV connection working?"*. It should call `omv_connection_info`
-and report your OMV version.
-
-## Configuration
-
-Everything is set through environment variables, in the `env` block above.
+The extension sets these for you; this table is for manual setups.
 
 | Variable | Default | Meaning |
 |---|---|---|
@@ -121,6 +141,27 @@ Everything is set through environment variables, in the `env` block above.
 | `OMV_ALLOW_SHELL` | `1` | `0` removes the `omv_shell` tool entirely |
 | `OMV_TIMEOUT` | `60` | Per-command timeout in seconds |
 
+Booleans accept `1`/`true`/`yes`/`on` and their opposites.
+
+---
+
+## SSH setup
+
+The server runs `ssh` with `BatchMode=yes`, so password logins will not work. This is
+deliberate: an MCP server has no way to prompt you for a password. Use a key.
+
+```bash
+ssh-keygen -t ed25519 -C "omv-mcp"        # skip if you already have a key
+ssh-copy-id root@192.168.1.100            # use your own NAS address
+ssh root@192.168.1.100 'omv-rpc -u admin System getInformation'
+```
+
+If that last command prints JSON, the server will work.
+
+**Root login refused?** OMV disables SSH root login by default. Either enable it under
+*Services → SSH → Permit root login*, or use your own account and turn on sudo — that
+account needs to be in the `sudo` group.
+
 Because `~/.ssh/config` is honoured, you can keep the details there instead:
 
 ```
@@ -130,7 +171,14 @@ Host nas
     IdentityFile ~/.ssh/id_ed25519
 ```
 
-and then just set `OMV_SSH_HOST=nas`.
+and then use `nas` as the hostname.
+
+## Verify
+
+Ask your assistant *"Is my OMV connection working?"*. It should call `omv_connection_info`
+and report your OMV version.
+
+---
 
 ## Tools
 
@@ -186,23 +234,25 @@ omv_wait_for_task(result["filename"], max_seconds=600)
 
 An escape hatch for everything outside the RPC layer — `journalctl`, `docker ps`,
 `smartctl`, package state. Prefer `omv_call` for anything OMV manages itself, so OMV's
-configuration database stays in sync with the system. Set `OMV_ALLOW_SHELL=0` to remove
-this tool.
+configuration database stays in sync with the system. Disabled by default in the
+extension.
+
+---
 
 ## Security
 
-**This server can do anything you can do in the OMV web interface, plus run arbitrary
-shell commands as root.** That is the point of it, but be clear-eyed about what it means:
-the only thing standing between a mistaken suggestion and a wiped filesystem is the tool
-confirmation dialog in your MCP client. Read what it says before approving.
+**This server can do anything you can do in the OMV web interface, and — if you enable the
+shell tool — run arbitrary commands as root.** That is the point of it, but be clear-eyed
+about what it means: the only thing standing between a mistaken suggestion and a wiped
+filesystem is the tool confirmation dialog in your MCP client. Read what it says before
+approving.
 
 Sensible precautions:
 
-- **Start with `OMV_READONLY=1`.** You can browse everything and change nothing. Turn it
-  off once you have a feel for what the assistant does with it.
-- **Set `OMV_ALLOW_SHELL=0`** unless you actually need shell access.
+- **Keep read-only mode on** until you have a feel for what the assistant does with it.
+- **Leave the shell tool off** unless you actually need it.
 - **Use a dedicated SSH key** for this server rather than your everyday key.
-- **Consider a non-root user** with `OMV_SUDO=1` and a narrowed sudoers rule.
+- **Consider a non-root user** with sudo and a narrowed sudoers rule.
 - **Keep it on your LAN.** There is no authentication in this server itself; its security
   boundary is your SSH configuration.
 
@@ -216,7 +266,11 @@ Service and method names are validated against `^[A-Za-z0-9_]+$` and every value
 interpolated into a shell command is passed through `shlex.quote`, so parameters cannot
 break out into the shell.
 
-## How discovery works
+---
+
+## How it works
+
+### Discovery
 
 An RPC service's name is not its file name — it is whatever the PHP `getName()` method
 returns. So `omv_list_services` greps the sources in
@@ -238,19 +292,33 @@ wrong if you write your own:
 Errors are cleaned up too: a failed `omv-rpc` call writes a JSON blob to stderr containing
 a full PHP stack trace, and only the `message` field is surfaced.
 
+### The MCP layer
+
+`mcp_stdio.py` implements the protocol directly: newline-delimited JSON-RPC 2.0 over
+stdio, `initialize` with version negotiation, `tools/list` with input schemas derived from
+each function's signature and docstring, and `tools/call`.
+
+That is a deliberate choice rather than an exercise. The official MCP Python SDK depends
+on pydantic, which ships compiled binaries — and the MCPB documentation is explicit that
+you [cannot portably bundle compiled dependencies](https://github.com/modelcontextprotocol/mcpb#python-servers).
+Implementing the handful of methods a tools-only server needs keeps the extension a single
+26 KB file that works on macOS, Windows and Linux alike, with no runtime to install and no
+Python version floor beyond 3.9.
+
+---
+
 ## Tests
 
-The test suite has no dependencies at all — it stubs out the MCP SDK — so it also runs on
-Python 3.9:
+No dependencies, nothing to install:
 
 ```bash
 python3 -m unittest discover -s tests -t tests -v
 ```
 
-Or with pytest:
+Or with pytest, if you prefer its output:
 
 ```bash
-pip install -r requirements-dev.txt && pytest
+pip install pytest && pytest
 ```
 
 The fixtures under `tests/fixtures/` are real output captured from an OpenMediaVault
@@ -258,16 +326,19 @@ The fixtures under `tests/fixtures/` are real output captured from an OpenMediaV
 response), with host-identifying values replaced. The tests therefore assert against what
 a NAS actually returns rather than against an idealised sample.
 
+---
+
 ## Troubleshooting
 
 | Symptom | Likely cause |
 |---|---|
-| `No matching distribution found for mcp` | Python older than 3.10 |
-| Server does not appear in the client | JSON syntax error, or a relative path in the config |
+| Extension will not start | No `python3` on PATH (`python` on Windows). Check with `python3 --version`. |
+| Server does not appear in the client | JSON syntax error, or a relative path in a manual config |
 | `Permission denied (publickey)` | SSH key not installed, or root login refused by the NAS |
 | `No RPC services found` | The SSH user cannot read `/usr/share/openmediavault/engined/rpc` |
-| `command not found: omv-rpc` | `/usr/sbin` is not in the SSH user's PATH — try `OMV_SUDO=1` |
-| `Command exceeded 60s` | Raise `OMV_TIMEOUT`, or use `omv_wait_for_task` for long jobs |
+| `command not found: omv-rpc` | `/usr/sbin` is not in the SSH user's PATH — turn on sudo |
+| `Command exceeded 60s` | Raise the timeout, or use `omv_wait_for_task` for long jobs |
+| A method is refused as "not a read method" | Read-only mode is on |
 | A newly installed plugin is invisible | Restart the MCP server; the service list is cached |
 
 Claude Desktop writes per-server logs to

@@ -31,3 +31,6 @@ htmlcov/
 .env
 *.local.json
 claude_desktop_config.json
+
+# Built extension bundles
+dist/

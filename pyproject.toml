@@ -4,10 +4,10 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "omv-mcp"
-version = "1.0.0"
+version = "1.1.0"
 description = "MCP server for managing an OpenMediaVault NAS over SSH"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.9"
 license = { file = "LICENSE" }
 authors = [{ name = "Michiel Groen" }]
 keywords = ["mcp", "openmediavault", "omv", "nas", "model-context-protocol"]
@@ -18,7 +18,9 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Topic :: System :: Systems Administration",
 ]
-dependencies = ["mcp>=1.2"]
+# Intentionally empty: the MCP protocol layer is implemented in mcp_stdio.py
+# against the standard library only. See that module for why.
+dependencies = []
 
 [project.urls]
 Homepage = "https://github.com/mbgroen/omv-mcp"
@@ -31,7 +33,7 @@ omv-mcp = "omv_mcp:main"
 dev = ["pytest>=8.0"]
 
 [tool.setuptools]
-py-modules = ["omv_mcp"]
+py-modules = ["omv_mcp", "mcp_stdio"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

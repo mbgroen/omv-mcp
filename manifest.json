@@ -1,0 +1,146 @@
+{
+  "manifest_version": "0.3",
+  "name": "omv-mcp",
+  "display_name": "OpenMediaVault",
+  "version": "1.1.0",
+  "description": "Manage an OpenMediaVault NAS over SSH.",
+  "long_description": "Gives Claude access to an OpenMediaVault NAS through OMV's own RPC layer -- the same one the web interface uses -- over an ordinary SSH connection. Inspect disks, filesystems, shared folders, users and S.M.A.R.T. health; restart services; apply configuration changes; run background jobs and read their output.\n\nNothing is installed on the NAS and no extra port is opened. Authentication is your existing SSH key.\n\nRather than a fixed list of narrow tools, the extension discovers the services and methods your particular installation offers at runtime, so OMV plugins you install later work straight away.\n\nStart with **Read-only mode** enabled to explore safely.",
+  "author": {
+    "name": "Michiel Groen",
+    "url": "https://github.com/mbgroen"
+  },
+  "homepage": "https://github.com/mbgroen/omv-mcp",
+  "documentation": "https://github.com/mbgroen/omv-mcp#readme",
+  "support": "https://github.com/mbgroen/omv-mcp/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mbgroen/omv-mcp"
+  },
+  "icon": "icon.png",
+  "license": "MIT",
+  "keywords": ["openmediavault", "omv", "nas", "ssh", "storage", "homelab"],
+  "server": {
+    "type": "python",
+    "entry_point": "server/main.py",
+    "mcp_config": {
+      "command": "python3",
+      "args": ["${__dirname}/server/main.py"],
+      "env": {
+        "OMV_SSH_HOST": "${user_config.ssh_host}",
+        "OMV_SSH_USER": "${user_config.ssh_user}",
+        "OMV_SSH_PORT": "${user_config.ssh_port}",
+        "OMV_SSH_KEY": "${user_config.ssh_key}",
+        "OMV_RPC_USER": "${user_config.rpc_user}",
+        "OMV_SUDO": "${user_config.use_sudo}",
+        "OMV_READONLY": "${user_config.readonly}",
+        "OMV_ALLOW_SHELL": "${user_config.allow_shell}",
+        "OMV_TIMEOUT": "${user_config.timeout}"
+      },
+      "platform_overrides": {
+        "win32": {
+          "command": "python"
+        }
+      }
+    }
+  },
+  "user_config": {
+    "ssh_host": {
+      "type": "string",
+      "title": "NAS hostname or IP address",
+      "description": "For example 192.168.1.100, or a host name from your ~/.ssh/config.",
+      "required": true
+    },
+    "ssh_user": {
+      "type": "string",
+      "title": "SSH username",
+      "description": "The account used to log in to the NAS. OpenMediaVault blocks root over SSH by default -- either enable it under Services / SSH, or use your own account and switch on 'Run commands with sudo' below.",
+      "default": "root",
+      "required": false
+    },
+    "ssh_port": {
+      "type": "number",
+      "title": "SSH port",
+      "description": "Change this only if your NAS does not use the standard port.",
+      "default": 22,
+      "min": 1,
+      "max": 65535,
+      "required": false
+    },
+    "ssh_key": {
+      "type": "file",
+      "title": "SSH private key",
+      "description": "Optional. Leave empty to use your ssh-agent and ~/.ssh/config, which is usually what you want. Password logins are not supported: the connection runs with BatchMode enabled, so it can never stop to prompt you.",
+      "required": false
+    },
+    "rpc_user": {
+      "type": "string",
+      "title": "OpenMediaVault user",
+      "description": "The OMV account the RPC call runs as. This is the web interface login, not the SSH user.",
+      "default": "admin",
+      "required": false
+    },
+    "use_sudo": {
+      "type": "boolean",
+      "title": "Run commands with sudo",
+      "description": "Switch this on when the SSH user above is not root. That account must be in the sudo group.",
+      "default": false,
+      "required": false
+    },
+    "readonly": {
+      "type": "boolean",
+      "title": "Read-only mode",
+      "description": "Refuses anything that does not look like a read operation, and disables shell access. Recommended while you get a feel for what the extension does. Turn it off when you want Claude to actually change settings.",
+      "default": true,
+      "required": false
+    },
+    "allow_shell": {
+      "type": "boolean",
+      "title": "Allow arbitrary shell commands",
+      "description": "Adds a tool that runs any shell command on the NAS, as the SSH user. Useful for logs, docker and package state -- but it is unrestricted, so leave it off unless you need it.",
+      "default": false,
+      "required": false
+    },
+    "timeout": {
+      "type": "number",
+      "title": "Command timeout (seconds)",
+      "description": "How long a single command may take before it is aborted. Long jobs should use the background task tool instead of a high value here.",
+      "default": 60,
+      "min": 5,
+      "max": 3600,
+      "required": false
+    }
+  },
+  "tools": [
+    {
+      "name": "omv_connection_info",
+      "description": "Show the active configuration and test connectivity to the NAS"
+    },
+    {
+      "name": "omv_list_services",
+      "description": "List all OpenMediaVault RPC services, including those added by plugins"
+    },
+    {
+      "name": "omv_list_methods",
+      "description": "List the methods of one RPC service"
+    },
+    {
+      "name": "omv_call",
+      "description": "Call an OpenMediaVault RPC method"
+    },
+    {
+      "name": "omv_wait_for_task",
+      "description": "Collect the output of a background job started by omv_call"
+    },
+    {
+      "name": "omv_shell",
+      "description": "Run an arbitrary shell command on the NAS"
+    }
+  ],
+  "compatibility": {
+    "claude_desktop": ">=0.10.0",
+    "platforms": ["darwin", "win32", "linux"],
+    "runtimes": {
+      "python": ">=3.9,<4.0"
+    }
+  }
+}
