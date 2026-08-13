@@ -39,12 +39,24 @@ works immediately, with no update to this server.
 Developed and verified against **OpenMediaVault 8.5.6-1 (Synchrony)** on Debian 13.
 OMV 7 uses the same RPC layer and is expected to work; reports welcome.
 
+### Platform support
+
+| Your machine | Extension (`.mcpb`) | Manual setup | Notes |
+|---|---|---|---|
+| **macOS** | Yes | Yes | Python 3.9 ships with the system; `ssh` is present |
+| **Windows** | Yes | Yes | Python is **not** included — install it from [python.org](https://www.python.org/downloads/) or the Microsoft Store first. `ssh` ships with Windows 10 1809 and later. |
+| **Linux** | — | Yes | Claude Desktop is released for macOS and Windows only, so there is no extension to install. Everything else works: use Claude Code or any other MCP client. |
+
+The server itself is verified on macOS (Python 3.9) and Linux (Python 3.13). Windows is
+covered by CI but has not been run against a real NAS — reports welcome.
+
 ---
 
-## Install as a Claude Desktop extension (recommended)
+## Install as a Claude Desktop extension (macOS and Windows)
 
 The extension gives you a settings panel — NAS address, SSH user, key, read-only mode —
-so nothing has to be edited in any file.
+so nothing has to be edited in any file. On Linux, skip to
+[Install manually](#install-manually).
 
 1. Download `omv-mcp-<version>.mcpb` from the
    [latest release](https://github.com/mbgroen/omv-mcp/releases/latest).
@@ -96,14 +108,23 @@ git clone https://github.com/mbgroen/omv-mcp.git
 
 There is nothing to install. Point your client at `omv_mcp.py` with your system Python.
 
-**Claude Code:**
+**Claude Code** — works the same on macOS, Linux and Windows:
 
 ```bash
 claude mcp add openmediavault -e OMV_SSH_HOST=192.168.1.100 -e OMV_READONLY=1 -- python3 "$PWD/omv_mcp.py"
 ```
 
+Add `-s user` to make it available in every project rather than only the current one.
+Check it with `claude mcp list`, which reports `✔ Connected` once the handshake succeeds.
+
+**Any other MCP client** — Cursor, Zed, Cline, VS Code, the OpenAI Agents SDK and others
+take the same three ingredients: the command `python3`, the argument
+`/absolute/path/to/omv_mcp.py`, and the environment variables below. This is a standard
+stdio MCP server with no client-specific behaviour.
+
 **Claude Desktop**, in `~/Library/Application Support/Claude/claude_desktop_config.json`
-(macOS) or `%APPDATA%\Claude\claude_desktop_config.json` (Windows):
+(macOS), `%APPDATA%\Claude\claude_desktop_config.json` (Windows) or
+`~/.config/Claude/claude_desktop_config.json` (Linux, unofficial builds):
 
 ```json
 {
@@ -142,6 +163,20 @@ The extension sets these for you; this table is for manual setups.
 | `OMV_TIMEOUT` | `60` | Per-command timeout in seconds |
 
 Booleans accept `1`/`true`/`yes`/`on` and their opposites.
+
+### Running on the NAS itself
+
+Leave `OMV_SSH_HOST` empty and commands run locally instead of over SSH, so the server can
+live on the NAS alongside OMV. This is only useful when the MCP client also runs there —
+Claude Code over an SSH session, for example — because stdio means the client starts the
+server as a child process.
+
+```bash
+OMV_SSH_HOST= python3 /path/to/omv_mcp.py
+```
+
+`omv_connection_info` reports `"mode": "local"` when it is working this way. OMV 8 ships
+Python 3.13, so nothing extra is needed on the NAS.
 
 ---
 
